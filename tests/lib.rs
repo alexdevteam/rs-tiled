@@ -1,7 +1,8 @@
 use std::fs::File;
 use std::path::Path;
 use tiled::{
-    error::TiledError, layers::LayerData, map::Map, properties::PropertyValue, tileset::Tileset,
+    error::TiledError, layers::LayerData, map::Map, properties::PropertyValue, tile::Gid,
+    tileset::Tileset,
 };
 
 fn parse_map_without_source(p: &Path) -> Result<Map, TiledError> {
@@ -23,11 +24,11 @@ fn test_gzip_and_zlib_encoded_and_raw_are_the_same() {
         assert_eq!(tiles.len(), 100);
         assert_eq!(tiles[0].len(), 100);
         assert_eq!(tiles[99].len(), 100);
-        assert_eq!(tiles[0][0].gid, 35);
-        assert_eq!(tiles[1][0].gid, 17);
-        assert_eq!(tiles[2][0].gid, 0);
-        assert_eq!(tiles[2][1].gid, 17);
-        assert!(tiles[99].iter().map(|t| t.gid).all(|g| g == 0));
+        assert_eq!(tiles[0][0].gid, Gid(35));
+        assert_eq!(tiles[1][0].gid, Gid(17));
+        assert_eq!(tiles[2][0].gid, Gid(0));
+        assert_eq!(tiles[2][1].gid, Gid(17));
+        assert!(tiles[99].iter().map(|t| t.gid).all(|g| g == Gid::EMPTY));
     } else {
         assert!(false, "It is wrongly recognised as an infinite map");
     }
@@ -56,7 +57,11 @@ fn test_external_tileset() {
 #[test]
 fn test_just_tileset() {
     let r = parse_map_without_source(&Path::new("assets/tiled_base64.tmx")).unwrap();
-    let t = Tileset::parse(File::open(Path::new("assets/tilesheet.tsx")).unwrap(), 1).unwrap();
+    let t = Tileset::parse_reader(
+        File::open(Path::new("assets/tilesheet.tsx")).unwrap(),
+        Gid(1),
+    )
+    .unwrap();
     assert_eq!(r.tilesets[0], t);
 }
 
@@ -177,8 +182,8 @@ fn test_ldk_export() {
     if let LayerData::Finite(tiles) = &r.layers[0].tiles {
         assert_eq!(tiles.len(), 8);
         assert_eq!(tiles[0].len(), 8);
-        assert_eq!(tiles[0][0].gid, 0);
-        assert_eq!(tiles[1][0].gid, 1);
+        assert_eq!(tiles[0][0].gid, Gid::EMPTY);
+        assert_eq!(tiles[1][0].gid, Gid(1));
     } else {
         assert!(false, "It is wrongly recognised as an infinite map");
     }

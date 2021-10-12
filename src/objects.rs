@@ -5,6 +5,7 @@ use xml::{attribute::OwnedAttribute, EventReader};
 use crate::{
     error::TiledError,
     properties::{parse_properties, Color, Properties},
+    tile::Gid,
     util::{get_attrs, parse_tag},
 };
 
@@ -75,7 +76,7 @@ pub enum ObjectShape {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Object {
     pub id: u32,
-    pub gid: u32,
+    pub gid: Gid,
     pub name: String,
     pub obj_type: String,
     pub width: f32,
@@ -97,7 +98,7 @@ impl Object {
             attrs,
             optionals: [
                 ("id", id, |v:String| v.parse().ok()),
-                ("gid", gid, |v:String| v.parse().ok()),
+                ("gid", gid, |v:String| v.parse().ok().and_then(|i| Some(Gid(i)))),
                 ("name", name, |v:String| v.parse().ok()),
                 ("type", obj_type, |v:String| v.parse().ok()),
                 ("width", width, |v:String| v.parse().ok()),
@@ -116,7 +117,7 @@ impl Object {
         let h = h.unwrap_or(0f32);
         let r = r.unwrap_or(0f32);
         let id = id.unwrap_or(0u32);
-        let gid = gid.unwrap_or(0u32);
+        let gid = gid.unwrap_or(Gid::EMPTY);
         let n = n.unwrap_or(String::new());
         let t = t.unwrap_or(String::new());
         let mut shape = None;

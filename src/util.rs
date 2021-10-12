@@ -1,3 +1,16 @@
+use std::{
+    collections::HashMap,
+    io::{BufReader, Read},
+};
+
+use xml::{attribute::OwnedAttribute, reader::XmlEvent, EventReader};
+
+use crate::{
+    animation::Frame,
+    error::TiledError,
+    layers::{Chunk, LayerData, LayerTile},
+};
+
 /// Loops through the attributes once and pulls out the ones we ask it to. It
 /// will check that the required ones are there. This could have been done with
 /// attrs.find but that would be inefficient.
@@ -24,6 +37,7 @@ macro_rules! get_attrs {
         }
     }
 }
+pub(crate) use get_attrs;
 
 /// Goes through the children of the tag and will call the correct function for
 /// that child. Closes the tag.
@@ -51,25 +65,7 @@ macro_rules! parse_tag {
         }
     }
 }
-
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufReader, Read},
-    path::Path,
-};
-
-pub(crate) use get_attrs;
 pub(crate) use parse_tag;
-use xml::{attribute::OwnedAttribute, reader::XmlEvent, EventReader};
-
-use crate::{
-    animation::Frame,
-    error::TiledError,
-    layers::{Chunk, LayerData, LayerTile},
-    map::Map,
-    tileset::Tileset,
-};
 
 pub(crate) fn parse_animation<R: Read>(
     parser: &mut EventReader<R>,

@@ -6,6 +6,7 @@ use crate::{
     error::TiledError,
     image::Image,
     properties::{parse_properties, Properties},
+    tile::Gid,
     util::*,
 };
 
@@ -13,7 +14,7 @@ use crate::{
 // Maybe PartialEq and Eq should be custom, so that it ignores tile-flipping?
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LayerTile {
-    pub gid: u32,
+    pub gid: Gid,
     pub flip_h: bool,
     pub flip_v: bool,
     pub flip_d: bool,
@@ -28,7 +29,7 @@ const ALL_FLIP_FLAGS: u32 =
 impl LayerTile {
     pub fn new(id: u32) -> LayerTile {
         let flags = id & ALL_FLIP_FLAGS;
-        let gid = id & !ALL_FLIP_FLAGS;
+        let gid = Gid(id & !ALL_FLIP_FLAGS);
         let flip_d = flags & FLIPPED_DIAGONALLY_FLAG == FLIPPED_DIAGONALLY_FLAG; // Swap x and y axis (anti-diagonally) [flips over y = -x line]
         let flip_h = flags & FLIPPED_HORIZONTALLY_FLAG == FLIPPED_HORIZONTALLY_FLAG; // Flip tile over y axis
         let flip_v = flags & FLIPPED_VERTICALLY_FLAG == FLIPPED_VERTICALLY_FLAG; // Flip tile over x axis

@@ -72,3 +72,19 @@ impl Tile {
         })
     }
 }
+
+/// A Tiled global tile ID.
+///
+/// These are used to identify tiles in a map. Since the map may have more than one tileset, an
+/// unique mapping is required to convert the tiles' local tileset ID to one which will work nicely
+/// even if there is more than one tileset.
+///
+/// Tiled also treats GID 0 as empty space, which means that the first tileset in the map will have
+/// a starting GID of 1.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Gid(pub u32);
+
+impl Gid {
+    /// The GID representing an empty tile in the map.
+    pub const EMPTY: Gid = Gid(0);
+}

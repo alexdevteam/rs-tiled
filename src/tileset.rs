@@ -10,20 +10,20 @@ use xml::EventReader;
 use crate::error::TiledError;
 use crate::image::Image;
 use crate::properties::{parse_properties, Properties};
-use crate::tile::Tile;
-use crate::util::*;
+use crate::tile::{Gid, Tile};
+use crate::util::{get_attrs, parse_tag};
 
 /// A tileset, usually the tilesheet image.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tileset {
     /// The GID of the first tile stored
-    pub first_gid: u32,
+    pub first_gid: Gid,
     pub name: String,
     pub tile_width: u32,
     pub tile_height: u32,
     pub spacing: u32,
     pub margin: u32,
-    pub tilecount: Option<u32>,
+    pub tilecount: u32,
     /// The Tiled spec says that a tileset can have mutliple images so a `Vec`
     /// is used. Usually you will only use one.
     pub images: Vec<Image>,
@@ -37,8 +37,12 @@ impl Tileset {
     /// External tilesets do not have a firstgid attribute.  That lives in the
     /// map. You must pass in `first_gid`.  If you do not need to use gids for anything,
     /// passing in 1 will work fine.
-    pub fn parse<R: Read>(reader: R, first_gid: u32) -> Result<Self, TiledError> {
+    pub fn parse_reader<R: Read>(reader: R, first_gid: Gid) -> Result<Self, TiledError> {
         Tileset::new_external(reader, first_gid)
+    }
+
+    pub fn contains_tile(&self, gid: Gid) -> bool {
+        self.first_gid <= gid && gid.0 < self.first_gid.0 + self.tilecount
     }
 
     pub(crate) fn parse_xml<R: Read>(
@@ -54,15 +58,15 @@ impl Tileset {
         parser: &mut EventReader<R>,
         attrs: &Vec<OwnedAttribute>,
     ) -> Result<Tileset, TiledError> {
-        let ((spacing, margin, tilecount), (first_gid, name, width, height)) = get_attrs!(
+        let ((spacing, margin), (tilecount, first_gid, name, width, height)) = get_attrs!(
            attrs,
            optionals: [
                 ("spacing", spacing, |v:String| v.parse().ok()),
                 ("margin", margin, |v:String| v.parse().ok()),
-                ("tilecount", tilecount, |v:String| v.parse().ok()),
             ],
            required: [
-                ("firstgid", first_gid, |v:String| v.parse().ok()),
+                ("tilecount", tilecount, |v:String| v.parse().ok()),
+                ("firstgid", first_gid, |v:String| v.parse().ok().and_then(|i| Some(Gid(i)))),
                 ("name", name, |v| Some(v)),
                 ("tilewidth", width, |v:String| v.parse().ok()),
                 ("tileheight", height, |v:String| v.parse().ok()),
@@ -110,7 +114,7 @@ impl Tileset {
             attrs,
             optionals: [],
             required: [
-                ("firstgid", first_gid, |v:String| v.parse().ok()),
+                ("firstgid", first_gid, |v:String| v.parse().ok().and_then(|i| Some(Gid(i)))),
                 ("source", name, |v| Some(v)),
             ],
             TiledError::MalformedAttributes("tileset must have a firstgid, name tile width and height with correct types".to_string())
@@ -126,7 +130,7 @@ impl Tileset {
         Tileset::new_external(file, first_gid)
     }
 
-    pub(crate) fn new_external<R: Read>(file: R, first_gid: u32) -> Result<Tileset, TiledError> {
+    pub(crate) fn new_external<R: Read>(file: R, first_gid: Gid) -> Result<Tileset, TiledError> {
         let mut tileset_parser = EventReader::new(file);
         loop {
             match tileset_parser
@@ -155,18 +159,18 @@ impl Tileset {
     }
 
     fn parse_external_tileset<R: Read>(
-        first_gid: u32,
+        first_gid: Gid,
         parser: &mut EventReader<R>,
         attrs: &Vec<OwnedAttribute>,
     ) -> Result<Tileset, TiledError> {
-        let ((spacing, margin, tilecount), (name, width, height)) = get_attrs!(
+        let ((spacing, margin), (tilecount, name, width, height)) = get_attrs!(
             attrs,
             optionals: [
                 ("spacing", spacing, |v:String| v.parse().ok()),
                 ("margin", margin, |v:String| v.parse().ok()),
-                ("tilecount", tilecount, |v:String| v.parse().ok()),
             ],
             required: [
+                ("tilecount", tilecount, |v:String| v.parse().ok()),
                 ("name", name, |v| Some(v)),
                 ("tilewidth", width, |v:String| v.parse().ok()),
                 ("tileheight", height, |v:String| v.parse().ok()),
@@ -199,7 +203,7 @@ impl Tileset {
             tile_height: height,
             spacing: spacing.unwrap_or(0),
             margin: margin.unwrap_or(0),
-            tilecount: tilecount,
+            tilecount,
             images: images,
             tiles: tiles,
             properties,

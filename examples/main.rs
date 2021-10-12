@@ -2,6 +2,7 @@ use std::fs::File;
 use std::path::PathBuf;
 
 use tiled::map::Map;
+use tiled::tile::Gid;
 
 fn main() {
     let path = PathBuf::from("assets/tiled_base64_zlib.tmx");
@@ -9,5 +10,5 @@ fn main() {
     println!("Opened file");
     let map = Map::parse_reader(file, Some(&path)).unwrap();
     println!("{:?}", map);
-    println!("{:?}", map.tileset_by_gid(22));
+    println!("{:?}", map.tileset_by_gid(Gid(22)));
 }

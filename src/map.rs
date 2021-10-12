@@ -14,6 +14,7 @@ use crate::{
     layers::{ImageLayer, Layer},
     objects::ObjectGroup,
     properties::{parse_properties, Color, Properties},
+    tile::Gid,
     tileset::Tileset,
     util::{get_attrs, parse_tag},
 };
@@ -159,17 +160,9 @@ impl Map {
         })
     }
 
-    /// This function will return the correct Tileset given a GID.
-    pub fn tileset_by_gid(&self, gid: u32) -> Option<&Tileset> {
-        let mut maximum_gid: i32 = -1;
-        let mut maximum_ts = None;
-        for tileset in self.tilesets.iter() {
-            if tileset.first_gid as i32 > maximum_gid && tileset.first_gid <= gid {
-                maximum_gid = tileset.first_gid as i32;
-                maximum_ts = Some(tileset);
-            }
-        }
-        maximum_ts
+    /// Returns the tileset that contains the tile with the given GID, if any.
+    pub fn tileset_by_gid(&self, gid: Gid) -> Option<&Tileset> {
+        self.tilesets.iter().find(|t| t.contains_tile(gid))
     }
 }
 

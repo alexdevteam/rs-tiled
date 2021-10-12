@@ -1,5 +1,5 @@
-use std::fs::File;
 use std::path::Path;
+use std::{fs::File, path::PathBuf};
 use tiled::{
     error::TiledError, layers::LayerData, map::Map, properties::PropertyValue, tile::Gid,
     tileset::Tileset,
@@ -99,6 +99,31 @@ fn test_infinite_tileset() {
         assert_eq!(chunks[&(-32, 32)].height, 32);
     } else {
         assert!(false, "It is wrongly recognised as a finite map");
+    }
+}
+
+#[test]
+fn test_sources() {
+    let external = Map::parse_file(Path::new("assets/tiled_base64_external.tmx")).unwrap();
+    assert_eq!(
+        external.source,
+        Some(Path::new("assets/tiled_base64_external.tmx").to_owned())
+    );
+    assert_eq!(
+        external.tilesets[0].source,
+        Some(Path::new("assets/tilesheet.tsx").to_owned())
+    );
+
+    let embedded = parse_map_without_source(&Path::new("assets/tiled_base64.tmx")).unwrap();
+    assert_eq!(embedded.source, None);
+    assert_eq!(embedded.tilesets[0].source, None);
+}
+
+#[test]
+fn test_external_tileset_from_embedded_map() {
+    match parse_map_without_source(&Path::new("assets/tiled_base64_external.tmx")).unwrap_err() {
+        TiledError::Other(err) if err == "Maps with external tilesets must know their file location.  See parse_with_path(Path)." => (),
+        _ => panic!()
     }
 }
 

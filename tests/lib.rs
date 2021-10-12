@@ -10,6 +10,39 @@ fn parse_map_without_source(p: &Path) -> Result<Map, TiledError> {
     return Map::parse_reader(file, None);
 }
 
+fn assert_eq_map_without_source(r: &Map, e: &Map) {
+    assert_eq!(r.version, e.version);
+    assert_eq!(r.orientation, e.orientation);
+    assert_eq!(r.width, e.width);
+    assert_eq!(r.height, e.height);
+    assert_eq!(r.tile_width, e.tile_width);
+    assert_eq!(r.tile_height, e.tile_height);
+    assert_eq!(r.layers, e.layers);
+    assert_eq!(r.image_layers, e.image_layers);
+    assert_eq!(r.object_groups, e.object_groups);
+    assert_eq!(r.properties, e.properties);
+    assert_eq!(r.background_color, e.background_color);
+    assert_eq!(r.infinite, e.infinite);
+    assert_eq!(r.tilesets.len(), e.tilesets.len());
+    r.tilesets
+        .iter()
+        .zip(e.tilesets.iter())
+        .for_each(|(t, t2)| assert_eq_tileset_without_source(t, t2));
+}
+
+fn assert_eq_tileset_without_source(t2: &Tileset, t: &Tileset) {
+    assert_eq!(t2.first_gid, t.first_gid);
+    assert_eq!(t2.name, t.name);
+    assert_eq!(t2.tile_width, t.tile_width);
+    assert_eq!(t2.tile_height, t.tile_height);
+    assert_eq!(t2.spacing, t.spacing);
+    assert_eq!(t2.margin, t.margin);
+    assert_eq!(t2.tilecount, t.tilecount);
+    assert_eq!(t2.images, t.images);
+    assert_eq!(t2.tiles, t.tiles);
+    assert_eq!(t2.properties, t.properties);
+}
+
 #[test]
 fn test_gzip_and_zlib_encoded_and_raw_are_the_same() {
     let z = parse_map_without_source(&Path::new("assets/tiled_base64_zlib.tmx")).unwrap();
@@ -39,30 +72,17 @@ fn test_external_tileset() {
     let r = parse_map_without_source(&Path::new("assets/tiled_base64.tmx")).unwrap();
     let e = Map::parse_file(&Path::new("assets/tiled_base64_external.tmx")).unwrap();
     // Compare everything BUT source
-    assert_eq!(r.version, e.version);
-    assert_eq!(r.orientation, e.orientation);
-    assert_eq!(r.width, e.width);
-    assert_eq!(r.height, e.height);
-    assert_eq!(r.tile_width, e.tile_width);
-    assert_eq!(r.tile_height, e.tile_height);
-    assert_eq!(r.tilesets, e.tilesets);
-    assert_eq!(r.layers, e.layers);
-    assert_eq!(r.image_layers, e.image_layers);
-    assert_eq!(r.object_groups, e.object_groups);
-    assert_eq!(r.properties, e.properties);
-    assert_eq!(r.background_color, e.background_color);
-    assert_eq!(r.infinite, e.infinite);
+    assert_eq_map_without_source(&r, &e);
 }
 
 #[test]
 fn test_just_tileset() {
-    let r = parse_map_without_source(&Path::new("assets/tiled_base64.tmx")).unwrap();
-    let t = Tileset::parse_reader(
-        File::open(Path::new("assets/tilesheet.tsx")).unwrap(),
-        Gid(1),
-    )
-    .unwrap();
-    assert_eq!(r.tilesets[0], t);
+    let r = Map::parse_file(&Path::new("assets/tiled_base64.tmx")).unwrap();
+    let path = Path::new("assets/tilesheet.tsx");
+    let t = Tileset::parse_reader(File::open(path).unwrap(), Gid(1), Some(path)).unwrap();
+    let t2 = &r.tilesets[0];
+    // Compare everything BUT source
+    assert_eq_tileset_without_source(&t, &t2);
 }
 
 #[test]

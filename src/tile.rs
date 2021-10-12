@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::Read};
+use std::io::Read;
 
 use xml::{attribute::OwnedAttribute, EventReader};
 
@@ -7,7 +7,7 @@ use crate::{
     error::TiledError,
     image::Image,
     objects::ObjectGroup,
-    properties::{parse_properties, Properties},
+    properties::Properties,
     util::{get_attrs, parse_tag},
 };
 
@@ -40,7 +40,7 @@ impl Tile {
         );
 
         let mut images = Vec::new();
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         let mut objectgroup = None;
         let mut animation = None;
         parse_tag!(parser, "tile", {
@@ -49,7 +49,7 @@ impl Tile {
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
             "objectgroup" => |attrs| {

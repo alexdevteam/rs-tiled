@@ -112,7 +112,7 @@ fn test_image_layers() {
 fn test_tile_property() {
     let r = parse_map_without_source(&Path::new("assets/tiled_base64.tmx")).unwrap();
     let prop_value: String = if let Some(&PropertyValue::StringValue(ref v)) =
-        r.tilesets[0].tiles[0].properties.get("a tile property")
+        r.tilesets[0].tiles[0].properties.0.get("a tile property")
     {
         v.clone()
     } else {
@@ -126,6 +126,7 @@ fn test_object_group_property() {
     let r = parse_map_without_source(&Path::new("assets/tiled_object_groups.tmx")).unwrap();
     let prop_value: bool = if let Some(&PropertyValue::BoolValue(ref v)) = r.object_groups[0]
         .properties
+        .0
         .get("an object group property")
     {
         *v
@@ -138,7 +139,7 @@ fn test_object_group_property() {
 fn test_tileset_property() {
     let r = parse_map_without_source(&Path::new("assets/tiled_base64.tmx")).unwrap();
     let prop_value: String = if let Some(&PropertyValue::StringValue(ref v)) =
-        r.tilesets[0].properties.get("tileset property")
+        r.tilesets[0].properties.0.get("tileset property")
     {
         v.clone()
     } else {

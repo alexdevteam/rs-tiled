@@ -79,30 +79,32 @@ impl PropertyValue {
     }
 }
 
-pub type Properties = HashMap<String, PropertyValue>;
+/// A type representing any custom property list from maps, tilesets, tiles, etc.
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct Properties(pub HashMap<String, PropertyValue>);
 
-pub(crate) fn parse_properties<R: Read>(
-    parser: &mut EventReader<R>,
-) -> Result<Properties, TiledError> {
-    let mut p = HashMap::new();
-    parse_tag!(parser, "properties", {
-        "property" => |attrs:Vec<OwnedAttribute>| {
-            let (t, (k, v)) = get_attrs!(
-                attrs,
-                optionals: [
-                    ("type", property_type, |v| Some(v)),
-                ],
-                required: [
-                    ("name", key, |v| Some(v)),
-                    ("value", value, |v| Some(v)),
-                ],
-                TiledError::MalformedAttributes("property must have a name and a value".to_string())
-            );
-            let t = t.unwrap_or("string".into());
+impl Properties {
+    pub(crate) fn parse_xml<R: Read>(parser: &mut EventReader<R>) -> Result<Self, TiledError> {
+        let mut p = HashMap::new();
+        parse_tag!(parser, "properties", {
+            "property" => |attrs:Vec<OwnedAttribute>| {
+                let (t, (k, v)) = get_attrs!(
+                    attrs,
+                    optionals: [
+                        ("type", property_type, |v| Some(v)),
+                    ],
+                    required: [
+                        ("name", key, |v| Some(v)),
+                        ("value", value, |v| Some(v)),
+                    ],
+                    TiledError::MalformedAttributes("property must have a name and a value".to_string())
+                );
+                let t = t.unwrap_or("string".into());
 
-            p.insert(k, PropertyValue::new(t, v)?);
-            Ok(())
-        },
-    });
-    Ok(p)
+                p.insert(k, PropertyValue::new(t, v)?);
+                Ok(())
+            },
+        });
+        Ok(Self(p))
+    }
 }

@@ -2,13 +2,7 @@ use std::{collections::HashMap, io::Read};
 
 use xml::{attribute::OwnedAttribute, EventReader};
 
-use crate::{
-    error::TiledError,
-    image::Image,
-    properties::{parse_properties, Properties},
-    tile::Gid,
-    util::*,
-};
+use crate::{error::TiledError, image::Image, properties::Properties, tile::Gid, util::*};
 
 /// Stores the proper tile gid, along with how it is flipped.
 // Maybe PartialEq and Eq should be custom, so that it ignores tile-flipping?
@@ -79,7 +73,7 @@ impl Layer {
             TiledError::MalformedAttributes("layer must have a name".to_string())
         );
         let mut tiles: LayerData = LayerData::Finite(Default::default());
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         parse_tag!(parser, "layer", {
             "data" => |attrs| {
                 if infinite {
@@ -90,7 +84,7 @@ impl Layer {
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
         });
@@ -143,7 +137,7 @@ impl ImageLayer {
                 ("name", name, |v| Some(v)),
             ],
             TiledError::MalformedAttributes("layer must have a name".to_string()));
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         let mut image: Option<Image> = None;
         parse_tag!(parser, "imagelayer", {
             "image" => |attrs| {
@@ -151,7 +145,7 @@ impl ImageLayer {
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
         });

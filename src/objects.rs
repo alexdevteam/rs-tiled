@@ -4,7 +4,7 @@ use xml::{attribute::OwnedAttribute, EventReader};
 
 use crate::{
     error::TiledError,
-    properties::{parse_properties, Color, Properties},
+    properties::{Color, Properties},
     tile::Gid,
     util::{get_attrs, parse_tag},
 };
@@ -41,14 +41,14 @@ impl ObjectGroup {
             TiledError::MalformedAttributes("object groups must have a name".to_string())
         );
         let mut objects = Vec::new();
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         parse_tag!(parser, "objectgroup", {
             "object" => |attrs| {
                 objects.push(Object::new(parser, attrs)?);
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
         });
@@ -121,7 +121,7 @@ impl Object {
         let n = n.unwrap_or(String::new());
         let t = t.unwrap_or(String::new());
         let mut shape = None;
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
 
         parse_tag!(parser, "object", {
             "ellipse" => |_| {
@@ -144,7 +144,7 @@ impl Object {
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
         });
@@ -166,7 +166,7 @@ impl Object {
             rotation: r,
             visible: v,
             shape: shape,
-            properties: properties,
+            properties,
         })
     }
 

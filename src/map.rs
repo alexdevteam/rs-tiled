@@ -13,7 +13,7 @@ use crate::{
     error::{ParseTileError, TiledError},
     layers::{ImageLayer, Layer},
     objects::ObjectGroup,
-    properties::{parse_properties, Color, Properties},
+    properties::{Color, Properties},
     tile::Gid,
     tileset::Tileset,
     util::{get_attrs, parse_tag},
@@ -114,7 +114,7 @@ impl Map {
         let mut tilesets = Vec::new();
         let mut layers = Vec::new();
         let mut image_layers = Vec::new();
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         let mut object_groups = Vec::new();
         let mut layer_index = 0;
         parse_tag!(parser, "map", {
@@ -133,7 +133,7 @@ impl Map {
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
             "objectgroup" => |attrs| {

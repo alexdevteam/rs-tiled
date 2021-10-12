@@ -9,7 +9,7 @@ use xml::EventReader;
 
 use crate::error::TiledError;
 use crate::image::Image;
-use crate::properties::{parse_properties, Properties};
+use crate::properties::Properties;
 use crate::tile::{Gid, Tile};
 use crate::util::{get_attrs, parse_tag};
 
@@ -76,14 +76,14 @@ impl Tileset {
 
         let mut images = Vec::new();
         let mut tiles = Vec::new();
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         parse_tag!(parser, "tileset", {
             "image" => |attrs| {
                 images.push(Image::new(parser, attrs)?);
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
             "tile" => |attrs| {
@@ -180,7 +180,7 @@ impl Tileset {
 
         let mut images = Vec::new();
         let mut tiles = Vec::new();
-        let mut properties = HashMap::new();
+        let mut properties = Properties::default();
         parse_tag!(parser, "tileset", {
             "image" => |attrs| {
                 images.push(Image::new(parser, attrs)?);
@@ -191,21 +191,21 @@ impl Tileset {
                 Ok(())
             },
             "properties" => |_| {
-                properties = parse_properties(parser)?;
+                properties = Properties::parse_xml(parser)?;
                 Ok(())
             },
         });
 
         Ok(Tileset {
-            first_gid: first_gid,
-            name: name,
+            first_gid,
+            name,
             tile_width: width,
             tile_height: height,
             spacing: spacing.unwrap_or(0),
             margin: margin.unwrap_or(0),
             tilecount,
-            images: images,
-            tiles: tiles,
+            images,
+            tiles,
             properties,
         })
     }

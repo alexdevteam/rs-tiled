@@ -3,12 +3,12 @@ use std::{collections::HashMap, io::Read};
 use xml::{attribute::OwnedAttribute, EventReader};
 
 use crate::{
-    animation::Frame,
+    animation::Animation,
     error::TiledError,
     image::Image,
     objects::ObjectGroup,
     properties::{parse_properties, Properties},
-    util::{get_attrs, parse_animation, parse_tag},
+    util::{get_attrs, parse_tag},
 };
 
 #[derive(Debug, PartialEq, Clone)]
@@ -17,7 +17,7 @@ pub struct Tile {
     pub images: Vec<Image>,
     pub properties: Properties,
     pub objectgroup: Option<ObjectGroup>,
-    pub animation: Option<Vec<Frame>>,
+    pub animation: Option<Animation>,
     pub tile_type: Option<String>,
     pub probability: f32,
 }
@@ -57,7 +57,7 @@ impl Tile {
                 Ok(())
             },
             "animation" => |_| {
-                animation = Some(parse_animation(parser)?);
+                animation = Some(Animation::parse_xml(parser)?);
                 Ok(())
             },
         });

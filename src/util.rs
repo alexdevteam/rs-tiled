@@ -67,19 +67,6 @@ macro_rules! parse_tag {
 }
 pub(crate) use parse_tag;
 
-pub(crate) fn parse_animation<R: Read>(
-    parser: &mut EventReader<R>,
-) -> Result<Vec<Frame>, TiledError> {
-    let mut animation = Vec::new();
-    parse_tag!(parser, "animation", {
-        "frame" => |attrs| {
-            animation.push(Frame::new(attrs)?);
-            Ok(())
-        },
-    });
-    Ok(animation)
-}
-
 pub(crate) fn parse_infinite_data<R: Read>(
     parser: &mut EventReader<R>,
     attrs: Vec<OwnedAttribute>,

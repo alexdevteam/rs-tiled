@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fmt,
     fs::File,
     io::Read,
@@ -58,6 +57,7 @@ impl Map {
     /// parse it. This augments `parse` with a file location: some engines
     /// (e.g. Amethyst) simply hand over a byte stream (and file location) for parsing,
     /// in which case this function may be required.
+    ///
     /// The path may be skipped if the map is fully embedded (Doesn't refer to external files).
     pub fn parse_reader<R: Read>(reader: R, path: Option<&Path>) -> Result<Self, TiledError> {
         let mut parser = EventReader::new(reader);

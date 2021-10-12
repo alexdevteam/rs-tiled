@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::Read};
+use std::io::Read;
 
 use xml::{attribute::OwnedAttribute, EventReader};
 
@@ -11,15 +11,21 @@ use crate::{
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ObjectGroup {
+    /// The object group's name.
     pub name: String,
+    /// The opacity with which this layer is drawn.
     pub opacity: f32,
+    /// Whether this layer is visible or not.
     pub visible: bool,
+    /// The collection of objects in this object group.
     pub objects: Vec<Object>,
-    pub colour: Option<Color>,
+    /// The color property of this layer.
+    pub color: Option<Color>,
     /**
      * Layer index is not preset for tile collision boxes
      */
     pub layer_index: Option<u32>,
+    /// The custom properties of this layer.
     pub properties: Properties,
 }
 
@@ -34,7 +40,7 @@ impl ObjectGroup {
             optionals: [
                 ("opacity", opacity, |v:String| v.parse().ok()),
                 ("visible", visible, |v:String| v.parse().ok().map(|x:i32| x == 1)),
-                ("color", colour, |v:String| v.parse().ok()),
+                ("color", color, |v:String| v.parse().ok()),
                 ("name", name, |v:String| v.into()),
             ],
             required: [],
@@ -56,8 +62,8 @@ impl ObjectGroup {
             name: n.unwrap_or(String::new()),
             opacity: o.unwrap_or(1.0),
             visible: v.unwrap_or(true),
-            objects: objects,
-            colour: c,
+            objects,
+            color: c,
             layer_index,
             properties,
         })
@@ -75,17 +81,29 @@ pub enum ObjectShape {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Object {
+    /// The object's ID. Unique for every object from within a map.
     pub id: u32,
+    /// The object's tile GID. If the object is not a tile, this is set to [`Gid::EMPTY`].
     pub gid: Gid,
+    /// The object's name.
     pub name: String,
+    /// The object's type.
     pub obj_type: String,
+    /// The object's width, in pixels.
     pub width: f32,
+    /// The object's height, in pixels.
     pub height: f32,
+    /// The object's X position, in pixels.
     pub x: f32,
+    /// The object's Y position, in pixels.
     pub y: f32,
+    /// The object's angle of rotation, in degrees.
     pub rotation: f32,
+    /// Whether this object is visible or not.
     pub visible: bool,
+    /// The object's shape.
     pub shape: ObjectShape,
+    /// The custom properties associated to this object.
     pub properties: Properties,
 }
 
@@ -155,14 +173,14 @@ impl Object {
         });
 
         Ok(Object {
-            id: id,
-            gid: gid,
+            id,
+            gid,
             name: n.clone(),
             obj_type: t.clone(),
             width: w,
             height: h,
-            x: x,
-            y: y,
+            x,
+            y,
             rotation: r,
             visible: v,
             shape: shape,

@@ -10,7 +10,7 @@ pub struct Image {
     pub source: String,
     pub width: i32,
     pub height: i32,
-    pub transparent_colour: Option<Color>,
+    pub transparent_color: Option<Color>,
 }
 
 impl Image {
@@ -36,7 +36,7 @@ impl Image {
             source: s,
             width: w,
             height: h,
-            transparent_colour: c,
+            transparent_color: c,
         })
     }
 }

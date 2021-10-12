@@ -16,7 +16,7 @@ use crate::util::{get_attrs, parse_tag};
 /// A tileset, usually the tilesheet image.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tileset {
-    /// The GID of the first tile stored
+    /// The GID of the first tile stored.
     pub first_gid: Gid,
     pub name: String,
     pub tile_width: u32,

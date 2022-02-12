@@ -12,7 +12,7 @@ use crate::properties::{parse_properties, Properties};
 use crate::tile::Tile;
 use crate::{util::*, Gid};
 
-/// A tileset, usually the tilesheet image.
+/// A tileset; A collection of [`Tile`]s with metadata engrained within.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tileset {
     pub name: String,

@@ -99,6 +99,7 @@ pub enum ObjectShape {
         kerning: bool,
         halign: HorizontalAlignment,
         valign: VerticalAlignment,
+        contents: String,
     },
 }
 
@@ -202,7 +203,7 @@ impl Object {
                 Ok(())
             },
             "text" => |attrs| {
-                shape = Some(Object::new_text(attrs)?);
+                shape = Some(Object::new_text(attrs, parser)?);
                 Ok(())
             },
             "properties" => |_| {
@@ -262,7 +263,10 @@ impl Object {
         Ok(ObjectShape::Point(x, y))
     }
 
-    fn new_text(attrs: Vec<OwnedAttribute>) -> Result<ObjectShape, TiledError> {
+    fn new_text<R: Read>(
+        attrs: Vec<OwnedAttribute>,
+        parser: &mut EventReader<R>,
+    ) -> Result<ObjectShape, TiledError> {
         let (
             (
                 font_family,
@@ -323,6 +327,11 @@ impl Object {
             _ => panic!("Unknown halign"),
         };
 
+        let contents = match parser.next().map_err(TiledError::XmlDecodingError)? {
+            xml::reader::XmlEvent::Characters(contents) => contents,
+            _ => panic!(),
+        };
+
         Ok(ObjectShape::Text {
             font_family,
             pixel_size,
@@ -335,6 +344,7 @@ impl Object {
             kerning,
             halign,
             valign,
+            contents,
         })
     }
 

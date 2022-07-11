@@ -72,11 +72,51 @@ impl ObjectGroup {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ObjectShape {
-    Rect { width: f32, height: f32 },
-    Ellipse { width: f32, height: f32 },
-    Polyline { points: Vec<(f32, f32)> },
-    Polygon { points: Vec<(f32, f32)> },
+    Rect {
+        width: f32,
+        height: f32,
+    },
+    Ellipse {
+        width: f32,
+        height: f32,
+    },
+    Polyline {
+        points: Vec<(f32, f32)>,
+    },
+    Polygon {
+        points: Vec<(f32, f32)>,
+    },
     Point(f32, f32),
+    Text {
+        font_family: String,
+        pixel_size: usize,
+        wrap: bool,
+        color: Color,
+        bold: bool,
+        italic: bool,
+        underline: bool,
+        strikeout: bool,
+        kerning: bool,
+        halign: HorizontalAlignment,
+        valign: VerticalAlignment,
+    },
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+#[allow(missing_docs)]
+pub enum HorizontalAlignment {
+    Left,
+    Center,
+    Right,
+    Justify,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+#[allow(missing_docs)]
+pub enum VerticalAlignment {
+    Top,
+    Center,
+    Bottom,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -161,6 +201,10 @@ impl Object {
                 shape = Some(Object::new_point(x, y)?);
                 Ok(())
             },
+            "text" => |attrs| {
+                shape = Some(Object::new_text(attrs)?);
+                Ok(())
+            },
             "properties" => |_| {
                 properties = Properties::parse_xml(parser)?;
                 Ok(())
@@ -216,6 +260,82 @@ impl Object {
 
     fn new_point(x: f32, y: f32) -> Result<ObjectShape, TiledError> {
         Ok(ObjectShape::Point(x, y))
+    }
+
+    fn new_text(attrs: Vec<OwnedAttribute>) -> Result<ObjectShape, TiledError> {
+        let (
+            (
+                font_family,
+                pixel_size,
+                wrap,
+                color,
+                bold,
+                italic,
+                underline,
+                strikeout,
+                kerning,
+                halign,
+                valign,
+            ),
+            (),
+        ) = get_attrs!(
+            attrs,
+            optionals: [
+                ("fontfamily", font_family, Some),
+                ("pixelsize", pixel_size, |v:String| v.parse().ok()),
+                ("wrap", wrap, |v:String| v.parse().ok()),
+                ("color", color, |v:String| v.parse().ok()),
+                ("bold", bold, |v:String| v.parse().ok()),
+                ("italic", italic, |v:String| v.parse().ok()),
+                ("underline", underline, |v:String| v.parse().ok()),
+                ("strikeout", strikeout, |v:String| v.parse().ok()),
+                ("kerning", kerning, |v:String| v.parse().ok()),
+                ("halign", halign, Some),
+                ("valign", valign, Some),
+            ],
+            required: [],
+            TiledError::Other("could not parse text".to_string())
+        );
+        let font_family = font_family.unwrap_or_else(|| "sans-serif".to_string());
+        let pixel_size = pixel_size.unwrap_or(16);
+        let wrap = if wrap == Some(1) { true } else { false };
+        let color = color.unwrap_or(Color {
+            red: 0,
+            green: 0,
+            blue: 0,
+        });
+        let bold = if bold == Some(1) { true } else { false };
+        let italic = if italic == Some(1) { true } else { false };
+        let underline = if underline == Some(1) { true } else { false };
+        let strikeout = if strikeout == Some(1) { true } else { false };
+        let kerning = if kerning == Some(0) { false } else { true };
+        let halign = match halign.as_deref() {
+            Some("left") | None => HorizontalAlignment::Left,
+            Some("center") => HorizontalAlignment::Center,
+            Some("right") => HorizontalAlignment::Right,
+            Some("justify") => HorizontalAlignment::Justify,
+            _ => panic!("Unknown halign"),
+        };
+        let valign = match valign.as_deref() {
+            Some("top") | None => VerticalAlignment::Top,
+            Some("center") => VerticalAlignment::Center,
+            Some("bottom") => VerticalAlignment::Bottom,
+            _ => panic!("Unknown halign"),
+        };
+
+        Ok(ObjectShape::Text {
+            font_family,
+            pixel_size,
+            wrap,
+            color,
+            bold,
+            italic,
+            underline,
+            strikeout,
+            kerning,
+            halign,
+            valign,
+        })
     }
 
     fn parse_points(s: String) -> Result<Vec<(f32, f32)>, TiledError> {

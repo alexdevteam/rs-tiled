@@ -232,12 +232,9 @@ impl Tileset {
         let id = gid.0 - self.first_gid.0;
         // FIXME: This won't return tiles with no special characteristics (tiled crate/format only keeps track
         // of ones with metadata attached)
-        match self
-            .tiles
-            .binary_search_by_key(&id, |t| t.id)
-        {
+        match self.tiles.binary_search_by_key(&id, |t| t.id) {
             Ok(index) => Some(&self.tiles[index]),
-            Err(_) => todo!(),
+            Err(_) => None,
         }
     }
 }

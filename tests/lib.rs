@@ -516,7 +516,9 @@ fn test_text_object() {
             kerning,
             halign,
             valign,
-            contents,
+            text,
+            width,
+            height,
         } => {
             assert_eq!(font_family.as_str(), "sans-serif");
             assert_eq!(*pixel_size, 16);
@@ -537,7 +539,9 @@ fn test_text_object() {
             assert_eq!(*kerning, true);
             assert_eq!(*halign, HorizontalAlignment::Center);
             assert_eq!(*valign, VerticalAlignment::Bottom);
-            assert_eq!(contents.as_str(), "Test");
+            assert_eq!(text.as_str(), "Test");
+            assert_eq!(*width, 87.7188);
+            assert_eq!(*height, 21.7969);
         }
         _ => panic!(),
     };
